@@ -1,0 +1,172 @@
+<aura:component controller="PaymentController" implements="force:hasRecordId">
+    <aura:attribute name="Contact" type="Object"/>
+    <aura:attribute name="Payments" type="List"/>
+    <aura:attribute name="payColumns" type="List"/>
+    <aura:attribute name="contactColumns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="sortedDirection" type="String" />
+    <aura:attribute name="projectName" type="String" />
+    <aura:attribute name="recordError" type="String" />
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="paymentId" type="Id" />
+    <aura:attribute name="hasPayments" type="boolean" default="false"/>
+    <aura:attribute name="viewPayments" type="boolean" default="false"/>
+    <aura:attribute name="newActive" type="boolean" default="false"/>
+    <aura:attribute name="editActive" type="boolean" default="false"/>
+    <aura:attribute name="deleteActive" type="boolean" default="false"/>
+    <aura:attribute name="newBroker" type="String[]" default="[‘Name’,’Email__c’,’Phone__c’,’Mobile_Phone__c’]" /> 
+    <!-- handlers-->
+    <aura:handler name="init" value="{! this }" action="{! c.init }"/>
+    <aura:handler event="c:ContactUpdated" action="{!c.handleContactUpdated}"/>
+    <!-- register event -->
+    <aura:registerEvent name="PaymentUpdated" type="c:PaymentUpdated"/>
+
+    <div>
+        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+            <tbody>
+                <tr>
+                    <td data-label="Contact Name">
+                        <div class="slds-truncate" style="width:180px" title="Contact.Name">
+                            <aura:if isTrue="{!v.viewPayments}">
+                                    <lightning:button variant="base" label="{!'▽' + '&nbsp; &nbsp;' + v.Contact.Name}" title="hidePayments" onclick="{! c.hidePayments }"/>
+                                <aura:set attribute="else">
+                                    <lightning:button variant="base" label="{!'▶︎' + '&nbsp; &nbsp;' + v.Contact.Name}" title="hidePayments" onclick="{! c.showPayments }"/>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                    </td>
+                    <td data-label="Payments Total" >
+                        <div class="slds-truncate" style="text-align:right; width:60px" title="Contact.Payments__c">
+                            {!v.Contact.Payments}
+                        </div>
+                    </td>
+                    <td data-label="Last Payment Date">
+                        <div class="slds-truncate slds-float_right" style="text-align:center; width:100px" title="Contact.Last_Payment_Date__c">
+                            <lightning:formattedDateTime value="{!v.Contact.Last_Payment_Date__c}" year="numeric" month="short" day="2-digit"/>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="slds-float_right">
+                            <lightning:button label="New Payment" title="newPaymentButton" onclick="{!c.clickNewPayment}"/>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+  
+    <!-- New Payment Modal -->
+    <aura:if isTrue="{!v.newActive}">
+        <div class="slds-container_fluid">
+            <section>
+                <div aria-hidden="false" id="editPanel" role="dialog" class="slds-modal slds-fade-in-open slds-backdrop slds-backdrop_open" style="display:block;">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Payment</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning:recordForm 
+                                objectApiName="Payment__c" 
+                                layoutType="FULL" 
+                                columns="2"
+                                mode="edit"/>
+                        </div>
+                        <!-- <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick="{!c.save}">Save</button> 
+                            <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">Cancel</button>     
+                        </footer>   -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </aura:if>
+    <!-- End New Payment Modal -->
+
+    <!-- Edit Payment Modal -->
+    <aura:if isTrue="{!v.editActive}">
+        <div class="slds-container_fluid">
+            <section>
+                <div aria-hidden="false" id="editPanel" role="dialog" class="slds-modal slds-fade-in-open slds-backdrop slds-backdrop_open" style="display:block;">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit Payment</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <force:recordEdit recordId="{!v.paymentId}" aura:id='edit' />
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick="{!c.save}">Save</button> 
+                            <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">Cancel</button>     
+                        </footer>  
+                    </div>
+                </div>
+            </section>
+        </div>
+    </aura:if>
+    <!-- End Edit Payment Modal -->
+    <!-- Delete Payment Modal -->
+    <aura:if isTrue="{!v.deleteActive}">
+
+            <force:recordData aura:id="recordHandler"
+            recordId="{!v.paymentId}"
+            fields="Id"
+            targetError="{!v.recordError}"
+            recordUpdated="{!c.showPayments}" />
+            
+        <!-- Display the delete record form -->
+        <div class="Delete Record">
+            <div aria-hidden="false" id="deletePanel" role="dialog" class="slds-modal slds-fade-in-open slds-backdrop slds-backdrop_open" style="display:block;">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header" >
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Payment</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                            Are you sure you want to delete this payment for {!v.projectName}?
+                    </div>  
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_destructive" onclick="{!c.delete}">Delete</button> 
+                        <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">Cancel</button>     
+                    </footer>  
+                </div>
+            </div>
+        </div>
+            
+        <!-- Display Lightning Data Service errors, if any -->
+        <aura:if isTrue="{!not(empty(v.recordError))}">
+            <div class="recordError">
+                {!v.recordError}</div>
+        </aura:if>
+    </aura:if>
+        <!-- End Delete Payment Modal -->
+
+
+    <aura:if isTrue="{!and(v.viewPayments,v.hasPayments)}" >
+        <div style="max-width: 700px; margin-left: 80px" >
+            
+            <lightning:datatable
+                keyField="id"
+                data="{! v.Payments }"
+                columns="{! v.payColumns }"
+                maxColumnWidth="600"
+                hideCheckboxColumn="true"
+                onsort="{!c.updateColumnSorting}"
+                sortedBy="{!v.sortedBy}"
+                sortedDirection="{!v.sortedDirection}"
+                onrowaction="{! c.handleRowAction }"
+            />
+            
+        </div>
+    </aura:if>
+ 
+
+</aura:component>	

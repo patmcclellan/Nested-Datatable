@@ -1,0 +1,123 @@
+<apex:page controller="PaymentsListController" lightningStyleSheets="true" id="thePage">
+    <apex:slds />
+    <div class="slds-scope" >
+    <apex:form id="theForm" >
+        <apex:pageMessages /> 
+        <apex:outputPanel >
+            <div class="slds-page-header" id="theHeader">
+                <div class="slds-grid">
+                    <div class="slds-col slds-has-flexi-truncate" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <div class="slds-media slds-no-space slds-grow">
+                            <div class="slds-media__figure">
+                                <svg class="slds-icon slds-icon-custom-custom17 .slds-icon_small" aria-hidden="true">
+                                    <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/custom-sprite/svg/symbols.svg#custom17')}"></use>
+                                </svg>
+                            </div>
+                            <div class="slds-media__body">
+                                <p class="slds-text-title_caps slds-line-height_reset">Payment</p>
+                                <h1 class="slds-page-header__title slds-m-right_small slds-align-middle slds-truncate"
+                                    title="Project Payments">Project Payments by Contact</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-m-around_medium">
+                            <apex:inputText label="Search Contacts"  
+                                            value="{!searchKey}" 
+                                            html-placeholder="Search Contacts" 
+                                            html-autofocus="true"/>
+                            &nbsp;
+                            <apex:commandButton value="Search" action="{!searchButton}"/>
+                            &nbsp;
+                            <apex:commandButton value="Show All" action="{!showAllButton}"/>
+                    </div>
+                </div>
+            </div>
+        </apex:outputPanel>
+        
+        <apex:pageBlock id="ContactPaymentPageBlock" mode="inlineEdit">
+            <apex:pageBlockButtons location="top" >
+                <div align="center">
+                    <apex:outputPanel id="topButtons">
+                    <p>Showing Page #{!pageNumber} of {!totalPages}</p>
+                    <apex:commandButton action="{!Beginning}" title="Beginning" value="|◀︎" disabled="{!disablePrevious}" reRender="contactPayments,topButtons,bottomButtons"/>
+                    <apex:commandButton action="{!Previous}" title="Previous" value="◀︎" disabled="{!disablePrevious}" reRender="contactPayments,topButtons,bottomButtons"/>        
+                    <apex:commandButton action="{!Next}" title="Next" value="▶︎" disabled="{!disableNext}" reRender="contactPayments,topButtons,bottomButtons"/>
+                    <apex:commandButton action="{!End}" title="End" value="▶︎|" disabled="{!disableNext}" reRender="contactPayments,topButtons,bottomButtons"/>        
+                    </apex:outputPanel>
+                </div>
+            </apex:pageBlockButtons>
+
+            <apex:outputPanel id="contactPayments">
+                <apex:pageBlockTable value="{!Contacts}" var="contact">
+                    <apex:column>
+                        <apex:outputField value="{!contact.Name}"/>
+                        <apex:facet name="header">
+                        </apex:facet>
+                    </apex:column>
+                    <apex:column>
+                        <apex:outputField value="{!contact.Payments__c}">
+                            <apex:inlineEditSupport disabled="true"/>
+                        </apex:outputField>
+                        <apex:facet name="header">
+                            Payments Total
+                        </apex:facet>
+                    </apex:column>
+                    <apex:column>
+                        <apex:outputField value="{!contact.Last_Payment_Date__c}">
+                            <apex:inlineEditSupport disabled="true"/>
+                        </apex:outputField>
+                        <apex:facet name="header">
+                            Last Payment Date
+                        </apex:facet>
+                    </apex:column>
+                    <apex:column> 
+                        <apex:commandButton id="saveButton" action="{!saveChanges}" value="Save" styleClass="slds-button slds-button_neutral"/> 
+                    </apex:column>
+                    <apex:column>
+                        <apex:commandButton id="cancelButton" value="Cancel" styleClass="slds-button slds-button_neutral"/> 
+                    </apex:column> 
+                    <apex:column>
+                        <apex:commandButton id="new" action="{!URLFOR($Action.Payment__c.New,null,[Contact__c=contact.Id])}" value="New" styleClass="slds-button slds-button_neutral"/>
+                    </apex:column>
+                    <apex:column breakBefore="true">
+                        <apex:pageBlockTable value="{!PaymentsMap[contact.Id]}" var="payment">    
+                            <apex:column> </apex:column>
+                            <apex:column headerValue="Project">
+                                <apex:outputField value="{!payment.Project__r.Name}">
+                                    <apex:inlineEditSupport disabled="true"/>
+                                </apex:outputField>
+                            </apex:column> 
+                            <apex:column headerValue="Amount">
+                                <apex:actionRegion>
+                                    <apex:outputField value="{!payment.Amount__c}" id="currencyAmount">
+                                            <apex:inlineEditSupport event="ondblClick" showOnEdit="saveButton,cancelButton" changedStyleClass="myBoldClass" />
+                                    </apex:outputField>
+                                </apex:actionRegion>
+                            </apex:column>
+                            <apex:column headerValue="Payment Date">
+                                <apex:actionRegion>
+                                    <apex:outputField value="{!payment.Payment_Date__c}" id="paymentDate">
+                                            <apex:inlineEditSupport event="ondblClick" showOnEdit="saveButton,cancelButton" changedStyleClass="myBoldClass" />
+                                    </apex:outputField>
+                                </apex:actionRegion>
+                            </apex:column>
+                            <apex:column>
+                                <apex:commandButton id="deleteButton" action="{! URLFOR($Action.Payment__c.Delete, payment.Id) }" value="Delete" styleClass="slds-button slds-button_neutral"/>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:column>
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:pageBlockButtons location="bottom" >
+                <apex:outputPanel id="bottomButtons">
+                <p>Showing Page #{!pageNumber} of {!totalPages}</p>
+                <apex:commandButton action="{!Beginning}" title="Beginning" value="|◀︎" disabled="{!disablePrevious}" reRender="contactPayments,topButtons,bottomButtons"/>
+                <apex:commandButton action="{!Previous}" title="Previous" value="◀︎" disabled="{!disablePrevious}" reRender="contactPayments,topButtons,bottomButtons"/>        
+                <apex:commandButton action="{!Next}" title="Next" value="▶︎" disabled="{!disableNext}" reRender="contactPayments,topButtons,bottomButtons"/>
+                <apex:commandButton action="{!End}" title="End" value="▶︎|" disabled="{!disableNext}" reRender="contactPayments,topButtons,bottomButtons"/>        
+                </apex:outputPanel>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+    </div>
+</apex:page>

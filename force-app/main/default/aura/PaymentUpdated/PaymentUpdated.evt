@@ -1,0 +1,3 @@
+<aura:event type="COMPONENT" description="PaymentUpdated">
+    <aura:attribute name="ContactId" type="String"/>
+</aura:event>

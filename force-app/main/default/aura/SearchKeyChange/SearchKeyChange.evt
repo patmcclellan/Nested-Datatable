@@ -1,0 +1,7 @@
+<!--
+ - Created by pmcclellan on 12/21/17.
+ -->
+
+<aura:event type="APPLICATION" description="SearchKeyChange">
+    <aura:attribute name="searchKey" type="String"/>
+</aura:event>

@@ -1,0 +1,66 @@
+<aura:component controller="ContactController" implements="flexipage:availableForAllPageTypes,force:hasRecordId, force:appHostable" access="global">
+    <!-- attributes -->
+    <aura:attribute name="Contacts" type="List" default="[]"/>
+    <!-- <aura:attribute name="ContactsCopy" type="List"/> -->
+    <aura:attribute name="ContactsMap" type="Map" default="{}"/>
+    <aura:attribute name="ContactsMapCopy" type="Map" default="{}"/>
+    <aura:attribute name="updatedContactId" type="String"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="intervalId" type="Object" />
+    <aura:attribute name="offset" type="String" default="0"/>
+    <aura:attribute name="totalContacts" type="Integer" default="0"/>
+    <aura:attribute name="searching" type="Boolean" default="false"/>
+    <!-- <aura:attribute name="moreData" type="Boolean" default="true"/> -->
+
+    <!-- register application event -->
+    <aura:registerEvent name="ContactUpdated" type="c:ContactUpdated"/>
+
+    <!-- handlers-->
+    <aura:handler name="init" value="{! this }" action="{! c.init }"/>
+    <aura:handler event="c:SearchKeyChange" action="{!c.searchKeyChange}"/>
+    <aura:handler name="PaymentUpdated" event="c:PaymentUpdated" action="{!c.updateContactInfo}"/>
+
+    <!-- the container element determine the height of the datatable -->
+    
+    <lightning:card iconName="standard:contact" title="Contacts with Payments" >
+        <div class="searchBar" >
+            <c:SearchBar/>
+        </div>
+        <div style="max-width: 800px">
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th scope="col" item-width="100">
+                            <div class="slds-truncate" title="Contact Name">Contact Name</div>
+                        </th>
+                        <th scope="col" item-width="60" >
+                            <div class="slds-truncate" style="text-align:center" title="Payments Total">Payments Total</div>
+                        </th>
+                        <th scope="col" item-width="100">
+                            <div class="slds-truncate" style="text-align:center" title="Last Payment Date">Last Payment Date</div>
+                        </th> 
+                        <th scope="col" item-width="100" style="text-align:center"> 
+                            <div class="slds-truncate"  title="Actions">Actions</div>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div aura:id="scroll_container" class="scrollerSize">
+            <aura:iteration items="{!v.Contacts}" var="Contact">
+                <c:ContactPayments Contact="{!Contact}"/>
+            </aura:iteration>
+        </div>
+
+        <footer class="slds-card__footer">
+            <div class="slds-text-title_caps">
+                Showing {!v.Contacts.length} of {!v.totalContacts} Contacts with Payments.
+            </div>
+            <div class="exampleHolder">
+                <lightning:spinner aura:id="spinner" alternativeText="Loading" size="medium" />
+            </div>
+        </footer>
+        
+    </lightning:card>
+</aura:component>

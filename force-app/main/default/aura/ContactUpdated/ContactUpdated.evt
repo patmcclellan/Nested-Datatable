@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="ContactUpdated">
+    <aura:attribute name="ContactId" type="String"/>
+</aura:event>
+

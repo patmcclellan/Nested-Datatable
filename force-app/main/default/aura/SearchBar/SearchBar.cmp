@@ -1,0 +1,20 @@
+<!--
+ - Created by pmcclellan on 12/21/17.
+ -->
+
+<aura:component description="SearchBar">
+
+    <aura:attribute name="searchString" type="String"/>
+
+    <aura:registerEvent name="SearchKeyChange" type="c:SearchKeyChange"/>
+
+<div class="search-entry" style="max-width: 800px">
+    <div class="slds-form-element slds-p_small">
+        <input type="text"
+               class="slds-input"
+               placeholder="Search Contacts by name"
+               onkeyup="{!c.searchKeyChange}"
+               autofocus="true"/>
+    </div>
+</div>
+</aura:component>
